@@ -1,0 +1,2 @@
+id,species,platform,read1,read2
+p1,saureus,illumina,./data/SRR10490537_1.fastq.gz,./data/SRR10490537_2.fastq.gz
