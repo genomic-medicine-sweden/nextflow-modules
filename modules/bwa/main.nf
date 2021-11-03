@@ -14,7 +14,7 @@ process index {
     """
 }
 
-process BWAMEM {
+process bwaMem {
   label "process_high"
   tag "${sampleName}"
 
@@ -25,11 +25,7 @@ process BWAMEM {
     path "${sampleName}.sam"
 
   script:
-    // define names and paths
-    //referenceFile = ''
-    //readOne = reads[0]
-    //readTwo = reads[1]
-    // compute flags
+
     markShort = params.markShort ? '-M' : ''
 
     """

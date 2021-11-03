@@ -7,19 +7,18 @@ Testing scripts for modules created with the test data in two servers - trannel 
  */
 nextflow.enable.dsl = 2
 
-/*
- * Define the default parameters
- */ 
-
-params.genome = '/fs1/resources/ref/micro/species/saureus/ref.fasta'
-//params.markShort = '-M'
-
+log.info """\
+C A L L I N G S  -  N F    v 2.1 
+================================
+genome   : $params.genome
+csv      : $params.csv
+"""
 
 
 /* 
  * Import modules 
- */
-include { BWAMEM } from '../../modules/bwa/main.nf'
+*/
+include { bwaMem } from '../../modules/bwa/main.nf'
 
 workflow {
   Channel
@@ -30,5 +29,5 @@ workflow {
 
       // Align with the reference genome 
 
-      BWAMEM(input)
+      bwaMem(input)
 }
