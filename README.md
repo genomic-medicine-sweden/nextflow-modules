@@ -2,6 +2,7 @@
 Shared nextflow modules and assets
 
 # The basic structure of the pipeline is as follows
+```
 
 ├── LICENSE
 ├── modules
@@ -22,3 +23,4 @@ Shared nextflow modules and assets
 │   └── nextflow.config
 └── README.md
 
+```
