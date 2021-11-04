@@ -14,26 +14,22 @@ process index {
     """
 }
 
-process mem {
+process bwaMem {
   label "process_high"
   tag "${sampleName}"
 
   input:
-    path referenceDir
-    tuple val(sampleName), path(reads)
+    tuple val(sampleName), path(r1), path(r2)
 
   output:
-    path "${samleName}.sam"
+    path "${sampleName}.sam"
 
   script:
-    // define names and paths
-    referenceFile = ''
-    readOne = reads[0]
-    readTwo = reads[1]
-    // compute flags
+
     markShort = params.markShort ? '-M' : ''
+
     """
-    bwa mem ${markShort} -t ${task.cpus} ${referenceFile} ${readOne} ${readTwo} > ${sampleName}.sam
+    bwa mem ${markShort} -t ${task.cpus} ${params.genome} ${r1} ${r2} > ${sampleName}.sam 
     """
 
 }
