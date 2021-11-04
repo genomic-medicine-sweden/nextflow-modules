@@ -1,6 +1,6 @@
 // Samtools functions
 
-process view {
+process samtools_view {
   tag "$input"
   label "process_medium"
 
@@ -21,7 +21,7 @@ process view {
     """
 }
 
-process sort {
+process samtools_sort {
   tag "$input"
   label "process_medium"
 
