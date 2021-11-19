@@ -103,3 +103,48 @@ process export_to_cgviz {
          --quast ${quast} > ${output}
     """ 
 }
+
+process ariba_summary_to_json {
+  tag "${summary.simpleName}"
+  label "process_low"
+  publishDir "${params.outdir}",
+    mode: params.publishDirMode,
+    overwrite: params.publishDirOverwrite
+
+  input:
+    path summary
+    path report
+    path reference
+
+  output:
+    path("${output}"), emit: output
+
+  script:
+    output = "${summary.simpleName}_export.json"
+    """
+    ariba2json.pl ${reference} ${summary} ${report} > ${output}
+    """
+}
+
+process post_align_qc {
+  tag "${bam.simpleName}"
+  label "process_low"
+  publishDir "${params.outdir}",
+    mode: params.publishDirMode,
+    overwrite: params.publishDirOverwrite
+
+  input:
+    path bam
+    path index
+    path cgmlst
+
+  output:
+    path report
+
+  script:
+    id = "${bam.simpleName}"
+    output = "${id}_bwa.qc"
+    """
+    postaln_qc.pl ${bam} ${reference} ${id} ${task.cpus} > ${output}
+    """
+}
