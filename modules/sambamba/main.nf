@@ -11,31 +11,25 @@ def initParams(Map params) {
 
 params = initParams(params)
 
-process kraken {
-  tag "${sampleName}"
+process sambamba_markdup {
   label "process_high"
+  tag "${bam.simpleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    tuple val(sampleName), path(reads)
-    path database
+    path bam
+    path index
 
   output:
-    path("${output}"), emit: output
-    path("${report}"), emit: report
+    path outputBam
+    path outputIndex
 
   script:
-    output = "${sampleName}_kraken.out"
-    report = "${sampleName}_kraken.report"
+    outputBam = "${bam.simpleName}_dedup.bam"
+    outputIndex = "${outputBam}.bai"
     """
-    kraken2 \\
-    ${args.join(' ')} \\
-    --threads ${task.cpus} \\
-    --db ${database} \\
-    --output ${output} \\
-    --report ${report} \\
-    ${reads.join(' ')}
+    sambamba markdup --tempdir tmp -t ${task.cpus} ${params.join(' ')} ${bam} ${outputBam}
     """
 }

@@ -11,7 +11,7 @@ def initParams(Map params) {
 
 params = initParams(params)
 
-process kraken {
+process bracken {
   tag "${sampleName}"
   label "process_high"
   publishDir "${params.outdir}", 
@@ -19,23 +19,23 @@ process kraken {
     overwrite: params.publishDirOverwrite
 
   input:
-    tuple val(sampleName), path(reads)
+    path report
     path database
 
   output:
     path("${output}"), emit: output
-    path("${report}"), emit: report
+    path("${outputReport}"), emit: report
 
   script:
-    output = "${sampleName}_kraken.out"
-    report = "${sampleName}_kraken.report"
+    sampleName = report.simpleName
+    output = "${sampleName}_bracken.out"
+    outputReport = "${sampleName}_bracken.report"
     """
-    kraken2 \\
+    bracken \\
     ${args.join(' ')} \\
-    --threads ${task.cpus} \\
-    --db ${database} \\
-    --output ${output} \\
-    --report ${report} \\
-    ${reads.join(' ')}
+    -d ${database} \\
+    -i ${report} \\
+    -o ${output} \\
+    -w ${outputReport}
     """
 }

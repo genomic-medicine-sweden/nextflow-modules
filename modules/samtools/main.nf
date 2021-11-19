@@ -42,3 +42,37 @@ process samtools_sort {
     samtools sort ${reference} -@ $task.cpus -o ${prefix}.sorted.${fileType} ${input}
     """
 }
+
+process samtools_index {
+  tag "$input"
+  label "process_medium"
+
+  input:
+    path input
+
+  output:
+    path output
+
+  script:
+    output = "${input}.bai"
+    """
+    samtools index -@ $task.cpus ${input}
+    """
+}
+
+process samtools_faidx {
+  tag "$input"
+  label "process_low"
+
+  input:
+    path input
+
+  output:
+    path output
+
+  script:
+    output = "${input}.fai"
+    """
+    samtools faidx ${input}
+    """
+}
