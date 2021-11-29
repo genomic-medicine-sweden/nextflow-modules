@@ -37,7 +37,6 @@ process samtools_sort {
     def reference = fasta ? "--reference ${fasta} -C" : ""
     def prefix = input.simpleName
     def fileType = fasta ? "cram" : input.getExtension()
-    def maxMemory = params.maxMemory ? "-m ${params.maxMemory}" : ""
     """
     samtools sort ${reference} -@ $task.cpus -o ${prefix}.sorted.${fileType} ${input}
     """
