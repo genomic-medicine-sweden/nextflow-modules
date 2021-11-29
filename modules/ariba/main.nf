@@ -55,7 +55,7 @@ process ariba_run {
   script:
     outputName = params.outdir ? params.outdir : "ariba_output"
     """
-    ariba run --threads ${task.cpus} ${referenceDir} ${reads.join(' ')} ${outputName}
+    ariba run ${args.join(' ')} --threads ${task.cpus} ${referenceDir} ${reads.join(' ')} ${outputName}
     cp ${outputName}/report.tsv ${sampleName}_ariba_report.tsv
     """
 }
