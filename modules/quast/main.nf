@@ -12,18 +12,18 @@ def initParams(Map params) {
 params = initParams(params)
 
 process quast {
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   label "process_medium"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path assembly
+    tuple val(sampleName), path(assembly)
     path reference
 
   output:
-    path "${assembly.simpleName}.quast.tsv"
+    tuple val(sampleName), path("${assembly.simpleName}.quast.tsv")
 
   script:
     sampleName = "${assembly.simpleName}"

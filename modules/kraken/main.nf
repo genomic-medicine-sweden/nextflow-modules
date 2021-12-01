@@ -23,8 +23,8 @@ process kraken {
     path database
 
   output:
-    path("${output}"), emit: output
-    path("${report}"), emit: report
+    tuple val(sampleName), path("${output}"), emit: output
+    tuple val(sampleName), path("${report}"), emit: report
 
   script:
     output = "${sampleName}_kraken.out"

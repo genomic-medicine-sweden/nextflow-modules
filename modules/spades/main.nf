@@ -22,7 +22,7 @@ process spades {
     tuple val(sampleName), path(reads)
 
   output:
-    path "${sampleName}.fasta"
+    tuple val(sampleName), path("${sampleName}.fasta")
 
   script:
     inputData = reads.size() == 2 ? "-1 ${reads[0]} -2 ${reads[1]}" : "-s ${reads[0]}"

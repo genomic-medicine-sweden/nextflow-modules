@@ -13,23 +13,21 @@ params = initParams(params)
 
 process freebayes {
   label "process_medium"
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path assembly
-    path assemblyIdx
-    path mappedReads
+    tuple val(sampleName), path(fasta)
+    tuple path(bam), path(bai) 
 
   output:
-    path output
+    tuple val(sampleName), path(output)
 
   script:
-    id = "${assembly.simpleName}"
-    output = "${id}.vcf"
+    output = "${sampleName}.vcf"
     """
-    freebayes ${params.join(' ')} -f ${assembly} ${mappedReads} > ${output}
+    freebayes ${params.args.join(' ')} -f ${fasta} ${bam} > ${output}
     """
 }

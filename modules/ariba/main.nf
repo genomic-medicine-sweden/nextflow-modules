@@ -50,7 +50,7 @@ process ariba_run {
     path referenceDir
 
   output:
-    path("${sampleName}_ariba_report.tsv")
+    tuple val(sampleName), path("${sampleName}_ariba_report.tsv")
 
   script:
     outputName = params.outdir ? params.outdir : "ariba_output"
@@ -61,21 +61,21 @@ process ariba_run {
 }
 
 process ariba_summary {
-  tag "${report.simpleName}"
+  tag "${sampleName}"
   label "process_high"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path report
+    tuple val(sampleName), path(report)
 
   output:
-    path("${outputPrefix}.csv")
+    tuple val(sampleName), path("${outputPrefix}.csv")
 
   script:
     outputPrefix = params.prefix ?: report.simpleName.replaceFirst('report', 'summary')
     """
-    ariba summary ${outputPrefix} ${report}
+    ariba summary ${args.join(' ')} ${outputPrefix} ${report}
     """
 }

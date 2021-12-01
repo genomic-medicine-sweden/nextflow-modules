@@ -19,15 +19,14 @@ process bracken {
     overwrite: params.publishDirOverwrite
 
   input:
-    path report
+    tuple val(sampleName), path(report)
     path database
 
   output:
-    path("${output}"), emit: output
-    path("${outputReport}"), emit: report
+    tuple val(sampleName), path("${output}"), emit: output
+    tuple val(sampleName), path("${outputReport}"), emit: report
 
   script:
-    sampleName = report.simpleName
     output = "${sampleName}_bracken.out"
     outputReport = "${sampleName}_bracken.report"
     """

@@ -22,35 +22,35 @@ process samtools_view {
 }
 
 process samtools_sort {
-  tag "$input"
+  tag "${sampleName}"
   label "process_medium"
 
   input:
-    path input
+    tuple val(sampleName), path(input)
     path fasta
 
   output:
-    path('*.bam'), optional: true, emit: bam
-    path('*.cram'), optional: true, emit: cram
+    tuple val(sampleName), path('*.bam'), optional: true, emit: bam
+    tuple val(sampleName), path('*.cram'), optional: true, emit: cram
 
   script:
-    def reference = fasta ? "--reference ${fasta} -C" : ""
+    def reference = fasta ? "--reference ${fasta} -O cram" : "-O bam"
     def prefix = input.simpleName
-    def fileType = fasta ? "cram" : input.getExtension()
+    def fileType = fasta ? "cram" : "bam"
     """
     samtools sort ${reference} -@ $task.cpus -o ${prefix}.sorted.${fileType} ${input}
     """
 }
 
 process samtools_index {
-  tag "$input"
+  tag "${sampleName}"
   label "process_medium"
 
   input:
-    path input
+    tuple val(sampleName), path(input)
 
   output:
-    path output
+    tuple val(sampleName), path(output)
 
   script:
     output = "${input}.bai"

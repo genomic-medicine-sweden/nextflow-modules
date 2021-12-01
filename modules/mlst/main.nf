@@ -12,20 +12,20 @@ def initParams(Map params) {
 params = initParams(params)
 
 process mlst {
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   label "process_medium"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path assembly
+    tuple val(sampleName), path(assembly)
     val specie
 
   output:
-    path('*.tsv'), optional: true, emit: tsv
-    path('*.json'), optional: true, emit: json
-    path('*.novel'), optional: true, emit: novel
+    tuple val(sampleName), path('*.tsv'), optional: true, emit: tsv
+    tuple val(sampleName), path('*.json'), optional: true, emit: json
+    tuple val(sampleName), path('*.novel'), optional: true, emit: novel
 
   script:
     outputName = "${assembly.simpleName}.mlst"

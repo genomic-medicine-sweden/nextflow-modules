@@ -13,35 +13,35 @@ params = initParams(params)
 
 process chewbbaca_allelecall {
   label "process_medium"
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path input
+    tuple val(sampleName), path(input)
     path schemaDir
     path trainingFile
 
   output:
-    path('output_dir/*/results_alleles.tsv'), emit: results
-    path("${missingLoci}"), emit: missing
+    tuple val(sampleName), path('output_dir/*/results_alleles.tsv')
+    //tuple val(sampleName), path("${missingLoci}"), emit: missing
 
   script:
-    id = "${assembly.simpleName}"
-    output = "${id}.vcf"
+    output = "${sampleName}.vcf"
     missingLoci = "chewbbaca.missingloci"
-    trainingFile = $trainingFile ?: "--ptf ${trainingFile}"
+    trainingFile = trainingFile ? "--ptf ${trainingFile}" : ""
     """
     echo ${input} > batch_input.list
     flock -e ${params.localTempDir}/chewbbaca.lock \\
       chewBBACA.py AlleleCall \\
-      ${params.join(' ')} \\
+      -i batch_input.list \\
+      ${params.args.join(' ')} \\
       --cpu ${task.cpus} \\
       --output-directory output_dir \\
       ${trainingFile} \\
       --schema-directory ${schemaDir}
-    bash parse_missing_loci.sh batch_input.list 'output_dir/*/results_alleles.tsv' ${missingloci}
+    #bash parse_missing_loci.sh batch_input.list 'output_dir/*/results_alleles.tsv' ${missingLoci}
     """
 }
 

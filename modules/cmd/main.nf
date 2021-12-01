@@ -19,21 +19,19 @@ params = initParams(params)
 
 process mask_polymorph_assembly {
   label "process_low"
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path assembly
-    path polymorph
+    tuple val(sampleName), path(assembly), path(polymorph)
 
   output:
-    path output
+    tuple val(sampleName), path(output)
 
   script:
-    id = "${assembly.simpleName}"
-    output = "${id}_masked.fasta"
+    output = "${sampleName}_masked.fasta"
     """
     error_corr_assembly.pl ${assembly} ${polymorph} > ${output}
     """
@@ -41,27 +39,24 @@ process mask_polymorph_assembly {
 
 process export_to_cdm {
   label "process_low"
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path cgmlstMissingLoci
-    path quast
-    path postQc
+    tuple val(sampleName), path(cgmlstMissingLoci), path(quast), path(postQc)
 
   output:
-    path output
+    path(output)
 
   script:
-    id = "${assembly.simpleName}"
-    output = "${id}.cdm"
+    output = "${sampleName}.cdm"
     rundir = 'fool'
 
     """
     echo --run-folder ${rundir} \\
-         --sample-id ${id} \\
+         --sample-id ${sampleName} \\
          --assay microbiology \\
          --qc ${postQc} \\
          --asmqc ${quast} \\
@@ -71,35 +66,31 @@ process export_to_cdm {
 
 process export_to_cgviz {
   label "process_low"
-  tag "${quast}"
+  tag "${sampleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
     //path cgmlst
-    path quast
-    path mlst
-    path bracken
-    path cgmlst
-    path ariba
+    tuple val(sampleName), path(quast), path(mlst), path(cgmlst), path(ariba)
+    //path bracken
 
   output:
-    path output
+    path(output)
 
   script:
-    id = "${quast}"
-    output = "${id}.cgviz"
+    output = "${sampleName}.cgviz"
     rundir = 'fool'
+    //--kraken ${bracken} \\
+    //--micmisloc ${cgmlstMissingLoci} \\
     """
     echo --overwrite \\
-         --sample-id ${id} \\
+         --sample-id ${sampleName} \\
          --species ${params.specie} \\
          --run ${rundir} \\
          --in ${cgmlst} \\
-         --kraken ${bracken} \\
          --aribavir ${ariba} \\
-         --micmisloc ${cgmlstMissingLoci} \\
          --quast ${quast} > ${output}
     """ 
 }

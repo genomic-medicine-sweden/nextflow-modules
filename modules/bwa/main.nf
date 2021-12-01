@@ -13,13 +13,13 @@ params = initParams(params)
 
 process bwa_index {
   label "process_high"
-  tag "${reference.simpleName}"
+  tag "${sampleName}"
 
   input:
-    path reference
+    tuple val(sampleName), path(reference)
 
   output:
-    path "${reference}.*", emit: reference
+    tuple val(sampleName), path("${reference}.*"), emit: reference
 
   script:
     """
@@ -36,7 +36,7 @@ process bwa_mem {
     path referenceIdx
 
   output:
-    path "${sampleName}.sam"
+    tuple val(sampleName), path("${sampleName}.sam")
 
   script:
     """

@@ -13,13 +13,13 @@ params = initParams(params)
 
 process sambamba_markdup {
   label "process_high"
-  tag "${bam.simpleName}"
+  tag "${sampleName}"
   publishDir "${params.outdir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    path bam
+    tuple val(sampleName), path(bam)
     path index
 
   output:
