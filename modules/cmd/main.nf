@@ -15,6 +15,7 @@ def getFileBasename(path) {
   return path.split('/')[-1] - ~/\.\w+$/
 }
 
+
 params = initParams(params)
 
 process mask_polymorph_assembly {
@@ -73,7 +74,7 @@ process export_to_cgviz {
 
   input:
     //path cgmlst
-    tuple val(sampleName), path(quast), path(mlst), path(cgmlst), path(ariba)
+    tuple val(sampleName), path(quast), path(mlst), path(cgmlst), path(virulence), path(resistance)
     //path bracken
 
   output:
@@ -89,8 +90,9 @@ process export_to_cgviz {
          --sample-id ${sampleName} \\
          --species ${params.specie} \\
          --run ${rundir} \\
-         --in ${cgmlst} \\
-         --aribavir ${ariba} \\
+         --cgmlst ${cgmlst} \\
+         --virulence ${virulence} \\
+         --resistance ${resfinder} \\
          --quast ${quast} > ${output}
     """ 
 }
