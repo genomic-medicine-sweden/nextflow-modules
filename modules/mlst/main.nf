@@ -9,6 +9,12 @@ def initParams(Map params) {
     return params
 }
 
+def getAbbrevSpecieName(fullName) {
+  "Convert the full name to the abbreviated version"
+  names = fullName.split('_')
+  return names[0][0] + names[1]
+}
+
 params = initParams(params)
 
 process mlst {
@@ -36,7 +42,7 @@ process mlst {
     ${params.args.join(' ')} \\
     ${blastDbPath} \\
     ${pubmlstDataDir} \\
-    --scheme ${specie} \\
+    --scheme ${getAbbrevSpecieName(specie)} \\
     --json ${outputName}.json \\
     --novel ${outputName}.novel \\
     --threads ${task.cpus} \\
