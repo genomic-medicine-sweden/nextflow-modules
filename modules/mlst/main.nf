@@ -11,7 +11,7 @@ def initParams(Map params) {
 
 def getAbbrevSpecieName(fullName) {
   "Convert the full name to the abbreviated version"
-  names = fullName.split('_')
+  names = fullName.split(' ')
   return names[0][0] + names[1]
 }
 
@@ -27,6 +27,7 @@ process mlst {
   input:
     tuple val(sampleName), path(assembly)
     val specie
+    path blastDb
 
   output:
     tuple val(sampleName), path('*.tsv'), optional: true, emit: tsv
@@ -34,18 +35,19 @@ process mlst {
     tuple val(sampleName), path('*.novel'), optional: true, emit: novel
 
   script:
-    outputName = "${assembly.simpleName}.mlst"
-    blastDbPath = params.blastdb ? "--blastdb ${params.blastdb}" : ""
-    pubmlstDataDir = params.pubmlstData ? "--datadir ${params.datadir}" : ""
+    outputName = "${sampleName}.mlst"
+    abbrevName = getAbbrevSpecieName(specie)
+    blastDbPath = blastDb ? "--blastdb ${blastDb}" : ""
+    //pubmlstDataDir = pubmlstData ? "--datadir ${pubmlstData}" : ""
+    //${pubmlstDataDir} \\
     """
     mlst \\
-    ${params.args.join(' ')} \\
-    ${blastDbPath} \\
-    ${pubmlstDataDir} \\
-    --scheme ${getAbbrevSpecieName(specie)} \\
-    --json ${outputName}.json \\
-    --novel ${outputName}.novel \\
-    --threads ${task.cpus} \\
-    ${assembly}
+      ${params.args.join(' ')} \\
+      ${blastDbPath} \\
+      --scheme  ${abbrevName} \\
+      --json ${outputName}.json \\
+      --novel ${outputName}.novel \\
+      --threads ${task.cpus} \\
+      ${assembly}
     """
 }

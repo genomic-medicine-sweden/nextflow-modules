@@ -73,27 +73,34 @@ process export_to_cgviz {
     overwrite: params.publishDirOverwrite
 
   input:
-    //path cgmlst
-    tuple val(sampleName), path(quast), path(mlst), path(cgmlst), path(virulence), path(resistance)
-    //path bracken
+    path runInfo
+    file meta
+    //paths
+    tuple val(sampleName), val(quast), val(mlst), val(cgmlst), val(virulence), val(resistance)
 
   output:
     path(output)
 
   script:
-    output = "${sampleName}.cgviz"
-    rundir = 'fool'
+    output = "${sampleName}_cgviz.json"
     //--kraken ${bracken} \\
-    //--micmisloc ${cgmlstMissingLoci} \\
+    quastArgs = quast ? "--quast ${quast}" : "" 
+    mlstArgs = mlst ? "--mlst ${mlst}" : "" 
+    cgmlstArgs = cgmlst ? "--cgmlst ${cgmlst}" : "" 
+    resfinderArgs = resistance ? "--resistance ${resistance}" : "" 
+    virulenceArgs = virulence ? "--virulence ${virulence}" : "" 
+    metaArgs = meta ? "--process-metadata  ${meta[1..-1].join(' --process-metadata ')}" : ""
     """
-    echo --overwrite \\
-         --sample-id ${sampleName} \\
-         --species ${params.specie} \\
-         --run ${rundir} \\
-         --cgmlst ${cgmlst} \\
-         --virulence ${virulence} \\
-         --resistance ${resfinder} \\
-         --quast ${quast} > ${output}
+    combine_results.py \\
+      --sample-id ${sampleName} \\
+      --run-metadata ${runInfo} \\
+      ${metaArgs} \\
+      ${quastArgs} \\
+      ${mlstArgs} \\
+      ${cgmlstArgs} \\
+      ${virulenceArgs} \\
+      ${resfinderArgs} \\
+      ${output}
     """ 
 }
 
@@ -139,5 +146,38 @@ process post_align_qc {
     output = "${id}_bwa.qc"
     """
     postaln_qc.pl ${bam} ${reference} ${id} ${task.cpus} > ${output}
+    """
+}
+
+process save_analysis_metadata {
+  tag "${workflow.runName}"
+  label "process_low"
+  publishDir "${params.outdir}", 
+    mode: params.publishDirMode, 
+    overwrite: params.publishDirOverwrite
+
+  input:
+
+  output:
+    path(output)
+
+  script:
+    output = "${workflow.runName}_analysis_meta.json"
+    """
+    #!/usr/bin/python
+    import json
+
+    res = {
+        "run": "$workflow.runName",
+        "date": "$workflow.start",
+        "pipeline": "$workflow.scriptName",
+        "version": "$workflow.revision",
+        "commit": "$workflow.commitId",
+        "configuration_files": "$workflow.configFiles"[1:-1].split(','),
+        "analysis_profile": "$workflow.profile",
+        "command": "$workflow.commandLine",
+    }
+    with open("$output", 'w') as out:
+        json.dump(res, out, indent=2)
     """
 }

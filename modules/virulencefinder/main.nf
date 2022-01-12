@@ -24,19 +24,24 @@ process virulencefinder {
     path virulenceDb
 
   output:
-    tuple val(sampleName), path(outputFile)
+    tuple val(sampleName), path(outputFile), emit: json
+    tuple val(sampleName), path(metaFile), emit: meta
     
   script:
-    def databasesArgs = databases ? "--databases ${databases.join(',')}" : ""
-    def outputDir = "results"
+    databasesArgs = databases ? "--databases ${databases.join(',')}" : ""
     outputFile = "virulencefinder_${sampleName}.json"
+    metaFile = "virulencefinder_meta_${sampleName}.json"
     """
-    mkdir ${outputDir}
+    # Get db version
+    DB_HASH=\$(git -C ${virulenceDb} rev-parse HEAD)
+    JSON_FMT='{"name": "%s", "version": "%s", "type": "%s"}'
+    printf "\$JSON_FMT" "virulencefinder" "\$DB_HASH" "database" > ${metaFile}
+
+    # Run virulencefinder
     virulencefinder.py              \\
     --infile ${reads.join(' ')}     \\
     ${databasesArgs}                \\
-    --databasePath ${virulenceDb}   \\
-    --outputPath ${outputDir}
-    cp ${outputDir}/data.json ${outputFile}
+    --databasePath ${virulenceDb}
+    cp data.json ${outputFile}
     """
 }
