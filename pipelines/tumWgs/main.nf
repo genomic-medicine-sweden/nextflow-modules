@@ -74,7 +74,7 @@ include {   BWA_ALIGN_SHARDED;
             GENERATE_GENS_DATA;
             GENERATE_GENS_DATA_NOR;
             COYOTE
-        } from './modules/sentieon/main.nf' params(params) 
+        } from '../../modules/sentieon/main.nf' params(params) 
     
 
 /*  Subworkflows for the pipelines could be made modular  */
