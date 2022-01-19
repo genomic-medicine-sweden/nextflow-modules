@@ -74,7 +74,7 @@ include {   BWA_ALIGN_SHARDED;
             GENERATE_GENS_DATA;
             GENERATE_GENS_DATA_NOR;
             COYOTE
-        } from '../../modules/sentieon/main.nf' params(params) 
+        } from './modules/sentieon/main.nf' params(params) 
     
 
 /*  Subworkflows for the pipelines could be made modular  */
@@ -312,25 +312,32 @@ workflow cnv_calling_workflow {
     emit:
         tumplot =   GATKCOV_CALL_TUM.out[0]
         norplot =   GATKCOV_CALL_NOR.out[0]
-        tumCov  =   GATKCOV_COUNT_TUM.out[0]
-        normCov =   GATKCOV_COUNT_NOR.out[0]
+        tumCov  =   GATKCOV_COUNT_TUM.out[1]
+        norCov  =   GATKCOV_COUNT_NOR.out[1]
         vcf =   FILTER_WITH_PANEL_CNVS.out
 }
 
-workflow gens_workflow {
+workflow gens_tum_workflow {
     take:
-        gatkcovNor
         gatkcovTum
-        dnascopeNor
         dnascopeTum
 
     main:
         gens = dnascopeTum.join(gatkcovTum)
         GENERATE_GENS_DATA ( params.GENS_GNOMAD, gens)
+}
 
-        gensN = gatkcovNor.join(dnascopeNor)
+workflow gens_nor_workflow {
+    take:
+        gatkcovNor
+        dnascopeNor
+
+    main:
+        gensN = dnascopeNor.join(gatkcovNor)
         GENERATE_GENS_DATA_NOR ( params.GENS_GNOMAD, gensN)
 }
+
+
 
 workflow coyote_workflow {
     take:
@@ -394,6 +401,7 @@ Channel
     .set { metaCoyote }
 
 /* Workflows */
+
 workflow {
     sentieon_workflow (  K_size, 
                         bwa_num_shards, 
@@ -420,15 +428,14 @@ workflow {
                             metaId)
     cnv_calling_workflow (  gatkId,
                             sentieon_workflow.out.cram    )
-    gens_workflow ( cnv_calling_workflow.out.tumCov,
-                    cnv_calling_workflow.out.normCov,
-                    dnascope_tum_workflow.out.vcf,
-                    dnascope_nor_workflow.out.vcf )  
+
+    gens_tum_workflow (cnv_calling_workflow.out.tumCov,        dnascope_tum_workflow.out.vcf )                   
+
+    gens_nor_workflow ( cnv_calling_workflow.out.norCov,            dnascope_nor_workflow.out.vcf  ) 
+
     coyote_workflow (   metaCoyote,
                         snv_calling_workflow.out.vcf,
                         sv_calling_workflow.out.vcf,
                         cnv_calling_workflow.out.vcf,
                         cnv_calling_workflow.out.tumplot )    
-    
-
 }

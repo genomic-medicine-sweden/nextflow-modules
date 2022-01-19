@@ -1,5 +1,5 @@
 # nextflow-modules
-Shared nextflow modules and assets
+Shared nextflow modules and assets used at CMD
 
 # The basic structure of the pipeline is as follows
 ```

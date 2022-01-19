@@ -249,6 +249,7 @@ process BQSR {
 	
 process MERGE_BQSR {
 	tag "$id"
+	label "process_low"
 	container = '/fs1/resources/containers/wgs_active.sif'
 
 	input:
@@ -267,6 +268,7 @@ process MERGE_BQSR {
 	
 process MERGE_DEDUP_CRAM {
 	tag "$id"
+	label "process_low"
 	container = '/fs1/resources/containers/wgs_active.sif'
 	publishDir "$params.outdir/$params.subdir/bam",
 				mode: 'copy',
@@ -293,6 +295,7 @@ process MERGE_DEDUP_CRAM {
 
 process QC_TO_CDM {
 	tag "$id"
+	label "process_low"
 	publishDir "$params.crondir/qc",
 				mode: 'copy', 
 				overwrite: 'true'
@@ -532,6 +535,7 @@ process DNASCOPE_NOR {
 
 process FREEBAYES {
 	tag "$group $id"
+	label "process_low"
 	errorStrategy 'retry'
 	maxErrors 5
 
@@ -618,6 +622,7 @@ process VARDICT {
 
 process CONCATENATE_VCFS {
 	tag "$vc $gr"
+	label "process_low"
 	publishDir "$params.outdir/$params.subdir/vcf",
 				mode: 'copy', 
 				overwrite: true
@@ -640,6 +645,7 @@ process CONCATENATE_VCFS {
 
 process AGGREGATE_VCFS {
 	tag "$group $vc $id"
+	label "process_low"
 	publishDir "$params.outdir/$params.subdir/vcf",
 				mode: 'copy',
 				overwrite: true
@@ -669,6 +675,7 @@ process AGGREGATE_VCFS {
 
 process PON_FILTER {
 	tag "$group $tumor_id"
+	label "process_low"
 	publishDir "$params.outdir/$params.subdir/vcf", 
 				mode: 'copy', 
 				overwrite: true
@@ -731,6 +738,7 @@ process GVCF_COMBINE {
 
 process  SPLIT_NORMALIZE { 
 	tag "$group"
+	label "process_low"
 	publishDir "$params.outdir/$params.subdir/vcf", 
 				mode: 'copy', 
 				overwrite: true
