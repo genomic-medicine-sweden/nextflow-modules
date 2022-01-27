@@ -1,0 +1,10 @@
+Singualrity
+Java
+nextflow>=21.10.06
+
+# to check python code style
+pycodestyle
+
+# to build documentation locally
+sphinx
+sphinx_rtd_theme
