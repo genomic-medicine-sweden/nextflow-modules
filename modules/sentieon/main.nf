@@ -1,3 +1,19 @@
+process COPY_FASTQ {
+	tag "$id"
+	label "process_low"
+	
+	input:
+		tuple	val(group),	val(id), path(read1), path(read2)
+
+	output:
+		tuple	val(group),	val(id), path("*R1*gz"), path ("*R2*gz")
+
+	"""
+	rsync -avzh ${read1} ${id}_R1.fq.gz
+	rsync -avzh ${read2} ${id}_R2.fq.gz
+	"""
+}
+
 process BWA_ALIGN_SHARDED {
 	tag "$shard $id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
@@ -51,13 +67,28 @@ process BWA_MERGE_SHARDS {
 	"""
 }
 
+process DELETE_FASTQ {
+	tag "$id"
+	container = '/fs1/resources/containers/wgs_active.sif'
+	label "process_low"
+	
+	input:
+		tuple 	val(id), path(bam), path(bai)
+		tuple	val(group),	val(id), path(read1), path(read2)
+
+	output:
+		tuple	val(group),	val(id)
+	
+	"""
+	rm -r ${read1} ${read2}
+	"""
+}
+
+
 process BAM_CRAM_ALL {
 	tag "$id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
 	label "process_high"
-	scratch true
-	stageInMode 'copy'
-	stageOutMode 'copy'
 
 	input: 
 		path(params.genome_file)
@@ -69,7 +100,6 @@ process BAM_CRAM_ALL {
 	script:
 	"""
 	sentieon driver \\
-		--temp_dir /local/scratch/ \\
 		-r ${params.genome_file} \\
 		-t ${task.cpus} \\
 		-i ${id}_merged.bam \\
@@ -84,10 +114,6 @@ process LOCUS_COLLECTOR {
 	tag "$shard_name $id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
 	label "process_medium"
-	scratch true
-	stageInMode 'copy'
-	stageOutMode 'copy'
-	errorStrategy 'retry'
 	maxErrors 5
 
 	input:
@@ -99,7 +125,6 @@ process LOCUS_COLLECTOR {
 	
 	"""
 	sentieon driver \\
-		--temp_dir /local/scratch/ \\
 		-r ${params.genome_file} \\
 		-t ${task.cpus} \\
 		-i ${id}_merged.cram ${shard} \\
@@ -112,9 +137,6 @@ process DEDUP {
 	tag "$shard_name $id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
 	label "process_medium"
-	scratch true
-	stageInMode 'copy'
-	stageOutMode 'copy'
 
 	input:
 		path(params.genome_file)
@@ -130,7 +152,6 @@ process DEDUP {
 
 	"""
 	sentieon driver \\
-		--temp_dir /local/scratch/ \\
 		-r ${params.genome_file} \\
 		-t ${task.cpus} \\
 		-i  ${id}_merged.cram \\
@@ -319,7 +340,6 @@ process QC_TO_CDM {
 process TNSCOPE {
 	tag "$shard_name $smpl_id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
-	
 	label "process_medium"
 	errorStrategy 'retry'
 	maxErrors 5
@@ -423,7 +443,6 @@ process TNSCOPE {
 process MERGE_VCF {
 	tag "$id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
-
 	label "process_medium"
 
 	input:

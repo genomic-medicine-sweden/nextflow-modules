@@ -36,7 +36,9 @@ SNV_HARD_FILTER         :       $params.SNV_HARD_FILTER
 * Import modules
 */
 
-include {   BWA_ALIGN_SHARDED;
+include {   COPY_FASTQ;
+            BWA_ALIGN_SHARDED;
+            DELETE_FASTQ;
             BWA_MERGE_SHARDS;
             BAM_CRAM_ALL;
             LOCUS_COLLECTOR;
@@ -86,13 +88,17 @@ workflow sentieon_workflow {
         bwa_shards
         fastq_sharded
 
-    main:      
+    main:
+        COPY_FASTQ (    fastq_sharded   )      
         BWA_ALIGN_SHARDED ( K_size, 
                             bwa_num_shards,
-                            bwa_shards.combine(fastq_sharded)   )
+                            bwa_shards.combine(COPY_FASTQ.out)   )
         BWA_MERGE_SHARDS (  BWA_ALIGN_SHARDED.out.groupTuple()  )
+        DELETE_FASTQ ( BWA_MERGE_SHARDS.out, COPY_FASTQ.out )
+        
         BAM_CRAM_ALL (  params.genome_file,
-                        BWA_MERGE_SHARDS.out.groupTuple()    )
+                        BWA_MERGE_SHARDS.out.groupTuple()    )        
+        
         LOCUS_COLLECTOR (   params.genome_file,
                             BAM_CRAM_ALL.out.combine(shards)    )
 
@@ -337,8 +343,6 @@ workflow gens_nor_workflow {
         GENERATE_GENS_DATA_NOR ( params.GENS_GNOMAD, gensN)
 }
 
-
-
 workflow coyote_workflow {
     take:
         metaCoyote
@@ -361,48 +365,57 @@ workflow coyote_workflow {
 bwa_num_shards = params.bwa_shards
 K_size = 100000000
 mode =  file(params.csv).countLines() > 2 ? "paired" : "unpaired"
+
 Channel
     .from( 0..bwa_num_shards-1)
     .set { bwa_shards }
+
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
     .map{ row-> tuple(row.group, row.id, file(row.read1), file(row.read2)) }
     .set { fastq_sharded }
+
 Channel
     .fromPath(params.genomic_shards_file)
     .splitCsv(header:false)
     .set { shards }
+    
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
     .map{ row-> tuple(row.id, row.diagnosis, file(row.read1)) }
     .set{ cron } 
+
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
     .map{ row-> tuple(row.group, row.id, row.type) }
     .set { metaId }
+
 Channel
     .fromPath("${params.intersect_bed}")
     .ifEmpty { exit 1, "Regions bed file not found: ${params.intersect_bed}" }
     .splitText( by: 20000, file: 'bedpart.bed' )
     .map { it -> [it.getBaseName().tokenize(".")[1],it] }
     .set { beds }
+
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
     .map{ row-> tuple(row.group, row.id, row.sex, row.type) }
     .set { gatkId }
+
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
     .map{ row-> tuple(row.group, row.type, row.clarity_sample_id, row.clarity_pool_id) }
     .set { metaCoyote }
+//
 
-/* Workflows */
-
+/*  Main workflow  */
 workflow {
+
     sentieon_workflow (  K_size, 
                         bwa_num_shards, 
                         bwa_shards, 
@@ -438,4 +451,33 @@ workflow {
                         sv_calling_workflow.out.vcf,
                         cnv_calling_workflow.out.vcf,
                         cnv_calling_workflow.out.tumplot )    
+
+    
+}
+
+/* Report the workflow */
+workflow.onComplete {
+
+	def msg = """\
+		Pipeline execution summary
+		---------------------------
+		Completed at: ${workflow.complete}
+		Duration    : ${workflow.duration}
+		Success     : ${workflow.success}
+		scriptFile  : ${workflow.scriptFile}
+		workDir     : ${workflow.workDir}
+		exit status : ${workflow.exitStatus}
+		errorMessage: ${workflow.errorMessage}
+		errorReport :
+		"""
+		.stripIndent()
+	def error = """\
+		${workflow.errorReport}
+		"""
+		.stripIndent()
+
+	base = file(params.csv).getBaseName()
+	logFile = file("$params.outdir/cron/logs/" + base + ".complete")
+	logFile.text = msg
+	logFile.append(error)
 }
