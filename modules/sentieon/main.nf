@@ -84,7 +84,6 @@ process DELETE_FASTQ {
 	"""
 }
 
-
 process BAM_CRAM_ALL {
 	tag "$id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
@@ -1194,7 +1193,13 @@ process GENERATE_GENS_DATA {
 	label "process_low"
 	publishDir "$params.outdir/$params.subdir/plot_data", 
 				mode: 'copy', 
-				overwrite: 'true'			
+				overwrite: 'true', 
+				pattern: '*.bed.gz*'
+	publishDir "$params.cron/gens", 
+				mode: 'copy', 
+				overwrite: 'true',
+				pattern: '*.gens'			
+			
 	
 	input:
 		path(params.GENS_GNOMAD)
@@ -1205,6 +1210,7 @@ process GENERATE_GENS_DATA {
 
 	"""
 	generate_gens_data.pl ${cov_stand} ${gvcf} ${id} ${params.GENS_GNOMAD}
+	echo "gens load sample --sample-id $id --genome-build 38 --baf ${params.gens_accessdir}/${id}.baf.bed.gz --coverage ${params.gens_accessdir}/${id}.cov.bed.gz" > ${id}.gens
 	"""
 }
 
@@ -1213,7 +1219,12 @@ process GENERATE_GENS_DATA_NOR {
 	label "process_low"
 	publishDir "$params.outdir/$params.subdir/plot_data", 
 				mode: 'copy', 
-				overwrite: 'true'
+				overwrite: 'true', 
+				pattern: '*.bed.gz*'
+	publishDir "$params.cron/gens", 
+				mode: 'copy', 
+				overwrite: 'true',
+				pattern: '*.gens'	
 	input:
 		path(params.GENS_GNOMAD)
 		tuple	val(id), path(gvcf), path(cov_stand), path(cov_denoise) 
@@ -1223,6 +1234,7 @@ process GENERATE_GENS_DATA_NOR {
 
 	"""
 	generate_gens_data.pl ${cov_stand} ${gvcf} ${id} ${params.GENS_GNOMAD}
+	echo "gens load sample --sample-id $id --genome-build 38 --baf ${params.gens_accessdir}/${id}.baf.bed.gz --coverage ${params.gens_accessdir}/${id}.cov.bed.gz" > ${id}.gens
 	"""
 }
 
