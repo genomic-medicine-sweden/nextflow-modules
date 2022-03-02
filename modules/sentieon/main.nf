@@ -132,6 +132,7 @@ process LOCUS_COLLECTOR {
 	"""
 }
 
+// This is the bottle-neck for the process completeion 
 process DEDUP {
 	tag "$shard_name $id"
 	container =   '/fs1/resources/containers/wgs_active.sif'
@@ -830,17 +831,18 @@ process FILTER_WITH_PANEL_SNV {
 				overwrite: true
 
 	input:
-		path (params.PANEL_SNV)
-		tuple val(group), path(vcf) 
+		path	(snv_panel)
+		tuple 	val(group), path(vcf) 
 
 	output:
-		 tuple val(group), path("${group}.agg.pon.vep.panel.vcf")
+		 tuple 	val(group), path("${group}.agg.pon.vep.panel.vcf")
 
 	script:
 		should_hard_filter = params.SNV_HARD_FILTER ? '1' : ''
 
 	"""
-	filter_with_panel_snv.pl ${vcf} ${params.PANEL_SNV} ${should_hard_filter} > ${group}.agg.pon.vep.panel.vcf
+	filter_with_panel_snv.pl ${vcf} ${snv_panel} ${should_hard_filter} > ${group}.agg.pon.vep.panel.vcf
+
 	"""
 }
 
@@ -933,14 +935,14 @@ process FILTER_WITH_PANEL_FUSIONS {
 				overwrite: true
 
 	input:
-		path(params.PANEL_FUS)
+		path	(fus_panel)
 		tuple	val(group), path (vcf)
 
 	output:
 		tuple	val(group), path ("${group}.manta.fusions.vcf")
 
 	"""
-	filter_with_panel_fusions.pl ${vcf} ${params.PANEL_FUS} > ${group}.manta.fusions.vcf	
+	filter_with_panel_fusions.pl ${vcf} ${fus_panel} > ${group}.manta.fusions.vcf	
 	"""	
 }
 
@@ -1177,14 +1179,14 @@ process FILTER_WITH_PANEL_CNVS {
 				overwrite: true
 	
 	input:
-		path (params.PANEL_CNV)
+		path	(cnv_panel)
 		tuple val(id), val(group), path(bed) 
 
 	output:
 		tuple val(id), val(group), path("${id}.cnv.annotated.panel.bed") 
 		
 	"""
-	filter_with_panel_cnv.pl ${bed} ${params.PANEL_CNV} > ${id}.cnv.annotated.panel.bed
+	filter_with_panel_cnv.pl ${bed} ${cnv_panel} > ${id}.cnv.annotated.panel.bed
 	"""
 }
 
@@ -1207,10 +1209,12 @@ process GENERATE_GENS_DATA {
 
 	output:
 		tuple	path("${id}.cov.bed.gz"), path("${id}.baf.bed.gz"), path("${id}.cov.bed.gz.tbi"), path("${id}.baf.bed.gz.tbi")
+		path	("${id}.gens")  
 
 	"""
 	generate_gens_data.pl ${cov_stand} ${gvcf} ${id} ${params.GENS_GNOMAD}
-	echo "gens load sample --sample-id $id --genome-build 38 --baf ${params.gens_accessdir}/${id}.baf.bed.gz --coverage ${params.gens_accessdir}/${id}.cov.bed.gz" > ${id}.gens
+
+	echo "gens load sample --sample-id $id --genome-build 38 --baf ${params.gens_accessdir}/${id}.baf.bed.gz --coverage ${params.gens_accessdir}/${id}.cov.bed.gz --overview-json ${params.gens_accessdir}/${id}.overview.json.gz" > ${id}.gens 
 	"""
 }
 
@@ -1231,10 +1235,12 @@ process GENERATE_GENS_DATA_NOR {
 
 	output:
 		tuple	path("${id}.cov.bed.gz"), path("${id}.baf.bed.gz"), path("${id}.cov.bed.gz.tbi"), path("${id}.baf.bed.gz.tbi")
+		path 	("${id}.gens")
 
 	"""
 	generate_gens_data.pl ${cov_stand} ${gvcf} ${id} ${params.GENS_GNOMAD}
-	echo "gens load sample --sample-id $id --genome-build 38 --baf ${params.gens_accessdir}/${id}.baf.bed.gz --coverage ${params.gens_accessdir}/${id}.cov.bed.gz" > ${id}.gens
+	
+	echo "gens load sample --sample-id $id --genome-build 38 --baf ${params.gens_accessdir}/${id}.baf.bed.gz --coverage ${params.gens_accessdir}/${id}.cov.bed.gz --overview-json ${params.gens_accessdir}/${id}.overview.json.gz" > ${id}.gens 
 	"""
 }
 
@@ -1257,13 +1263,15 @@ process COYOTE {
 		tumor_idx = type.findIndexOf{ it == 'tumor' || it == 'T' }
 
 	"""
-	echo "import_myeloid_to_coyote_vep_gms_dev.pl \\
+	echo "import_myeloid_to_coyote_vep_gms_dev_WGS.pl \\
 		--id ${group} --group tumwgs \\
 		--vcf /access/tumwgs/vcf/${vcf} \\
 		--cnv /access/tumwgs/cnv/${cnv} \\
 		--transloc /access/tumwgs/vcf/${fusions} \\
 		--cnvprofile /access/tumwgs/cov/${cnvplot} \\
 		--clarity-sample-id ${lims_id[tumor_idx]} \\
+		--build 38 \\
+        --gens ${group} \\
 		--clarity-pool-id ${pool_id[tumor_idx]}" > ${group}.coyote_wgs
 	"""
 }

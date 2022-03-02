@@ -10,6 +10,8 @@ nextflow.enable.dsl = 2
 * General parameters 
 */
 
+
+
 log.info """\
 ======================================================================
 TUMWGS -NF v2
@@ -248,8 +250,8 @@ workflow snv_calling_workflow {
                         params.GNOMAD,
                         PON_FILTER.out
                     )
-        
-        FILTER_WITH_PANEL_SNV ( params.PANEL_SNV ,
+        def snv_panel = params.panels[params.panel]['PANEL_SNV']
+        FILTER_WITH_PANEL_SNV ( snv_panel,
                                 ANNOTATE_VEP.out )
     emit:
         vcf = FILTER_WITH_PANEL_SNV.out
@@ -269,8 +271,10 @@ workflow sv_calling_workflow {
                 idManta,
                 fileManta   )
         ANNOTATE_MANTA (    params.SNPEFF_DIR,
-                            MANTA.out )    
-        FILTER_WITH_PANEL_FUSIONS ( params.PANEL_FUS,
+                            MANTA.out )
+
+        def fus_panel = params.panels[params.panel]['PANEL_FUS']    
+        FILTER_WITH_PANEL_FUSIONS ( fus_panel,
                                     ANNOTATE_MANTA.out  )
     emit:
         vcf = FILTER_WITH_PANEL_FUSIONS.out
@@ -313,7 +317,9 @@ workflow cnv_calling_workflow {
         CNVS_ANNOTATE ( params.GENE_BED_PC,
                         GATKCOV_CALL_TUM.out[1]  )
 
-        FILTER_WITH_PANEL_CNVS (params.PANEL_CNV, CNVS_ANNOTATE.out)
+        def cnv_panel = params.panels[params.panel]['PANEL_CNV']
+        FILTER_WITH_PANEL_CNVS (    cnv_panel, 
+                                    CNVS_ANNOTATE.out   )
     
     emit:
         tumplot =   GATKCOV_CALL_TUM.out[0]
@@ -411,7 +417,7 @@ Channel
     .splitCsv(header:true)
     .map{ row-> tuple(row.group, row.type, row.clarity_sample_id, row.clarity_pool_id) }
     .set { metaCoyote }
-//
+
 
 /*  Main workflow  */
 workflow {
