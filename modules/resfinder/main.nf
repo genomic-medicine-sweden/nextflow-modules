@@ -44,9 +44,11 @@ process resfinder {
     POINT_DB_HASH=\$(git -C ${pointfinderDb} rev-parse HEAD)
     JSON_FMT='[{"name": "%s", "version": "%s", "type": "%s"},{"name": "%s", "version": "%s", "type": "%s"}]'
     printf "\$JSON_FMT" "resfinder" \$RES_DB_HASH "database" "pointfinder" \$POINT_DB_HASH "database" > $metaFile
+    # Get resfinder path
+    RESF=$(which run_resfinder.py)
 
     # Run resfinder
-    run_resfinder.py                \\
+    "${RESF}"                       \\
     --inputfastq ${reads.join(' ')} \\
     ${specieArgs}                   \\
     ${resfinderFinderParams}        \\
