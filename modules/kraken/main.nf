@@ -14,7 +14,7 @@ params = initParams(params)
 process kraken {
   tag "${sampleName}"
   label "process_high"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 

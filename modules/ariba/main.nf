@@ -14,7 +14,7 @@ params = initParams(params)
 process ariba_prepareref {
   tag "${fasta.simpleName}"
   label "process_high"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
@@ -41,7 +41,7 @@ process ariba_prepareref {
 process ariba_run {
   tag "${sampleName}"
   label "process_high"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
@@ -63,7 +63,7 @@ process ariba_run {
 process ariba_summary {
   tag "${sampleName}"
   label "process_high"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 

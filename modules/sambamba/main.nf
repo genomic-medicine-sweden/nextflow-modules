@@ -14,7 +14,7 @@ params = initParams(params)
 process sambamba_markdup {
   label "process_high"
   tag "${sampleName}"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 

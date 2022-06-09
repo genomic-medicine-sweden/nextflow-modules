@@ -14,7 +14,7 @@ params = initParams(params)
 process virulencefinder {
   label "process_medium"
   tag "${sampleName}"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 

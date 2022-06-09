@@ -14,7 +14,7 @@ params = initParams(params)
 process chewbbaca_allelecall {
   label "process_medium"
   tag "${sampleName}"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
@@ -48,7 +48,7 @@ process chewbbaca_allelecall {
 process chewbbaca_split_results {
   label "process_low"
   tag "${assembly.simpleName}"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
@@ -70,7 +70,7 @@ process chewbbaca_split_results {
 process chewbbaca_split_missing_loci {
   label "process_low"
   tag "${assembly.simpleName}"
-  publishDir "${params.outdir}", 
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
