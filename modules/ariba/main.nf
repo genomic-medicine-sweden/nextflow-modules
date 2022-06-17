@@ -26,7 +26,7 @@ process ariba_prepareref {
     path(outputDir)
 
   script:
-    def outputDir = params.outdir ? params.outdir : "ariba_reference"
+    def outputDir = "ariba_reference"
     def metadata = metadata ? "--metadata ${metadata}" : "--all_coding"
     """
     ariba prepareref \\
