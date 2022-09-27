@@ -30,10 +30,13 @@ process chewbbaca_allelecall {
   script:
     output = "${sampleName}.vcf"
     missingLoci = "chewbbaca.missingloci"
-    trainingFile = trainingFile ? "--ptf ${trainingFile}" : ""
+    trainingFile = trainingFile ? "--ptf ${trainingFile}" : "" 
+    flockfile = file(params.localTempDir + '/chewbbaca.lock') 
+    flocking = flockfile.exists() ? "flock -e $flockfile \\" : ""
+
     """
     echo ${input} > batch_input.list
-    flock -e ${params.localTempDir}/chewbbaca.lock \\
+    ${flocking}
       chewBBACA.py AlleleCall \\
       -i batch_input.list \\
       ${params.args.join(' ')} \\

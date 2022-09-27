@@ -164,7 +164,7 @@ process save_analysis_metadata {
   script:
     output = "${workflow.runName}_analysis_meta.json"
     """
-    #!/usr/bin/python
+    #!/usr/bin/env python
     import json
 
     res = {

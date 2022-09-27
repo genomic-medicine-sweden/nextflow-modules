@@ -21,8 +21,8 @@ process resfinder {
   input:
     tuple val(sampleName), path(reads)
     val specie
-    path resfinderDb
-    path pointfinderDb
+    val resfinderDb
+    val pointfinderDb
 
   output:
     tuple val(sampleName), path(outputFileJson), emit: json
