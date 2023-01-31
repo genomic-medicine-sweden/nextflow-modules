@@ -23,7 +23,7 @@ process bwa_index {
 
   script:
     """
-    bwa index ${reference}
+    bwa index ${reference} ${reference.baseName}/${reference}
     """
 }
 
