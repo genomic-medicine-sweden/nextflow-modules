@@ -156,8 +156,6 @@ process save_analysis_metadata {
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
-  input:
-
   output:
     path(output)
 
