@@ -20,12 +20,13 @@ process chewbbaca_allelecall {
 
   input:
     val sampleName
-    path batch_input
+    path batchInput
     path schemaDir
     path trainingFile
 
   output:
-    tuple val(sampleName), path('output_dir/results_alleles.tsv')
+    val sampleName, emit: sampleName
+    path 'output_dir/results_alleles.tsv', emit: calls
     //tuple val(sampleName), path("${missingLoci}"), emit: missing
 
   script:
@@ -37,7 +38,7 @@ process chewbbaca_allelecall {
     """
     ${flocking}
       chewie AlleleCall \\
-      -i ${batch_input} \\
+      -i ${batchInput} \\
       ${params.args.join(' ')} \\
       --cpu ${task.cpus} \\
       --output-directory output_dir \\
@@ -69,23 +70,24 @@ process chewbbaca_create_batch_list {
 
 process chewbbaca_split_results {
   label "process_low"
-  tag "${assembly.simpleName}"
+  tag "${sampleName}"
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
+    each sampleName
     path input
 
   output:
-    path("${output}")
+    tuple val(sampleName), path("${output}")
 
   script:
     id = "${input.simpleName}"
-    output = "${id}.chewbbaca"
+    output = "${sampleName}.chewbbaca"
     """
     head -1 ${input} > ${output}
-    grep ${id} ${input} >> ${output}
+    grep ${sampleName} ${input} >> ${output}
     """
 }
 
