@@ -13,60 +13,76 @@ params = initParams(params)
 
 process chewbbaca_allelecall {
   label "process_medium"
+  tag "${workflow.runName}"
+  publishDir "${params.publishDir}", 
+    mode: params.publishDirMode, 
+    overwrite: params.publishDirOverwrite
+
+  input:
+    val sampleName
+    path batchInput
+    path schemaDir
+    path trainingFile
+
+  output:
+    val sampleName, emit: sampleName
+    path 'output_dir/results_alleles.tsv', emit: calls
+    //tuple val(sampleName), path("${missingLoci}"), emit: missing
+
+  script:
+    missingLoci = "chewbbaca.missingloci"
+    trainingFile = trainingFile ? "--ptf ${trainingFile}" : "" 
+
+    """
+    chewie AlleleCall \\
+    -i ${batchInput} \\
+    ${params.args.join(' ')} \\
+    --cpu ${task.cpus} \\
+    --output-directory output_dir \\
+    ${trainingFile} \\
+    --schema-directory ${schemaDir}
+    #bash parse_missing_loci.sh batch_input.list 'output_dir/*/results_alleles.tsv' ${missingLoci}
+    """
+}
+
+process chewbbaca_create_batch_list {
+  label "process_low"
+  publishDir params.publishDir, 
+    mode: params.publishDirMode, 
+    overwrite: params.publishDirOverwrite
+
+  input:
+    path maskedAssembly
+
+  output:
+    path "batch_input.list"
+
+  script:
+    output = "batch_input.list"
+    """
+    realpath $maskedAssembly > $output
+    """
+}
+
+process chewbbaca_split_results {
+  label "process_low"
   tag "${sampleName}"
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    tuple val(sampleName), path(input)
-    path schemaDir
-    path trainingFile
-
-  output:
-    tuple val(sampleName), path('output_dir/*/results_alleles.tsv')
-    //tuple val(sampleName), path("${missingLoci}"), emit: missing
-
-  script:
-    output = "${sampleName}.vcf"
-    missingLoci = "chewbbaca.missingloci"
-    trainingFile = trainingFile ? "--ptf ${trainingFile}" : "" 
-    flockfile = file(params.localTempDir + '/chewbbaca.lock') 
-    flocking = flockfile.exists() ? "flock -e $flockfile \\" : ""
-
-    """
-    echo ${input} > batch_input.list
-    ${flocking}
-      chewBBACA.py AlleleCall \\
-      -i batch_input.list \\
-      ${params.args.join(' ')} \\
-      --cpu ${task.cpus} \\
-      --output-directory output_dir \\
-      ${trainingFile} \\
-      --schema-directory ${schemaDir}
-    #bash parse_missing_loci.sh batch_input.list 'output_dir/*/results_alleles.tsv' ${missingLoci}
-    """
-}
-
-process chewbbaca_split_results {
-  label "process_low"
-  tag "${assembly.simpleName}"
-  publishDir "${params.publishDir}", 
-    mode: params.publishDirMode, 
-    overwrite: params.publishDirOverwrite
-
-  input:
+    each sampleName
     path input
 
   output:
-    path("${output}")
+    tuple val(sampleName), path("${output}")
 
   script:
-    id = "${input.simpleName}"
-    output = "${id}.chewbbaca"
+    output = "${sampleName}.chewbbaca"
     """
     head -1 ${input} > ${output}
-    grep ${id} ${input} >> ${output}
+    grep ${sampleName} ${input} >> ${output}
     """
 }
 
