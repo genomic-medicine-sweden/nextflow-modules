@@ -32,18 +32,15 @@ process chewbbaca_allelecall {
   script:
     missingLoci = "chewbbaca.missingloci"
     trainingFile = trainingFile ? "--ptf ${trainingFile}" : "" 
-    flockfile = file(params.localTempDir + '/chewbbaca.lock') 
-    flocking = flockfile.exists() ? "flock -e $flockfile \\" : ""
 
     """
-    ${flocking}
-      chewie AlleleCall \\
-      -i ${batchInput} \\
-      ${params.args.join(' ')} \\
-      --cpu ${task.cpus} \\
-      --output-directory output_dir \\
-      ${trainingFile} \\
-      --schema-directory ${schemaDir}
+    chewie AlleleCall \\
+    -i ${batchInput} \\
+    ${params.args.join(' ')} \\
+    --cpu ${task.cpus} \\
+    --output-directory output_dir \\
+    ${trainingFile} \\
+    --schema-directory ${schemaDir}
     #bash parse_missing_loci.sh batch_input.list 'output_dir/*/results_alleles.tsv' ${missingLoci}
     """
 }
@@ -62,7 +59,6 @@ process chewbbaca_create_batch_list {
 
   script:
     output = "batch_input.list"
-    //for i in $maskedAssembly ; do echo -e "\$PWD/\$i" >> $output ; done
     """
     realpath $maskedAssembly > $output
     """
@@ -83,7 +79,6 @@ process chewbbaca_split_results {
     tuple val(sampleName), path("${output}")
 
   script:
-    id = "${input.simpleName}"
     output = "${sampleName}.chewbbaca"
     """
     head -1 ${input} > ${output}
