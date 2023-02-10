@@ -53,7 +53,7 @@ process ariba_run {
     tuple val(sampleName), path("${sampleName}_ariba_report.tsv")
 
   script:
-    outputName = params.outdir ? params.outdir : "ariba_output"
+    outputName = "ariba_output"
     """
     ariba run ${args.join(' ')} --force --threads ${task.cpus} ${referenceDir} ${reads.join(' ')} ${outputName}
     cp ${outputName}/report.tsv ${sampleName}_ariba_report.tsv
