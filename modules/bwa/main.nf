@@ -39,11 +39,12 @@ process bwa_mem {
     tuple val(sampleName), path("${sampleName}.sam")
 
   script:
+    def args = task.ext.args ?: ''
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/.amb//'`
 
     bwa mem \\
-      ${args.join(' ')} \\
+      ${args} \\
       -t ${task.cpus} \\
       \${INDEX} \\
       ${reads.join(' ')} > ${sampleName}.sam 
