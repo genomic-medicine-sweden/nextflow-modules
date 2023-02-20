@@ -20,7 +20,7 @@ process resfinder {
 
   input:
     tuple val(sampleName), path(reads)
-    val specie
+    val species
     val resfinderDb
     val pointfinderDb
 
@@ -33,7 +33,7 @@ process resfinder {
   script:
     def resfinderFinderParams = pointfinderDb ? "--acquired --db_path_res ${resfinderDb}" : ""
     def pointFinderParams = pointfinderDb ? "--point --db_path_point ${pointfinderDb}" : ""
-    def specieArgs = specie ? "--species '${specie}'" : ""
+    def speciesArgs = species ? "--species '${species}'" : ""
     outputFileJson = "resfinder_${sampleName}.json"
     metaFile = "resfinder_meta_${sampleName}.json"
     outputFileGene = "pheno_table_${sampleName}.txt"
@@ -48,7 +48,7 @@ process resfinder {
     # Run resfinder
     python -m resfinder             \\
     --inputfastq ${reads.join(' ')} \\
-    ${specieArgs}                   \\
+    ${speciesArgs}                   \\
     ${resfinderFinderParams}        \\
     ${pointFinderParams}            \\
     --out_json std_format_under_development.json  \\
