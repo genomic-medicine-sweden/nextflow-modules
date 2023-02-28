@@ -9,7 +9,7 @@ def initParams(Map params) {
     return params
 }
 
-def getAbbrevSpecieName(fullName) {
+def getAbbrevSpeciesName(fullName) {
   "Convert the full name to the abbreviated version"
   names = fullName.split(' ')
   return names[0][0] + names[1]
@@ -26,7 +26,7 @@ process mlst {
 
   input:
     tuple val(sampleName), path(assembly)
-    val specie
+    val species
     path blastDb
 
   output:
@@ -36,8 +36,8 @@ process mlst {
 
   script:
     outputName = "${sampleName}.mlst"
-    abbrevName = getAbbrevSpecieName(specie)
-    blastDbPath = blastDb ? "--blastdb ${blastDb}" : ""
+    abbrevName = getAbbrevSpeciesName(species)
+    blastDbPath = blastDb ? "--blastdb ${blastDb}/mlst.fa" : ""
     //pubmlstDataDir = pubmlstData ? "--datadir ${pubmlstData}" : ""
     //${pubmlstDataDir} \\
     """
