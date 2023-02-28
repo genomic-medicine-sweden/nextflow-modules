@@ -37,7 +37,7 @@ process mlst {
   script:
     outputName = "${sampleName}.mlst"
     abbrevName = getAbbrevSpeciesName(species)
-    blastDbPath = blastDb ? "--blastdb ${blastDb}" : ""
+    blastDbPath = blastDb ? "--blastdb ${blastDb}/mlst.fa" : ""
     //pubmlstDataDir = pubmlstData ? "--datadir ${pubmlstData}" : ""
     //${pubmlstDataDir} \\
     """
