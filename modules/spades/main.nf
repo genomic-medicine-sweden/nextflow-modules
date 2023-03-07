@@ -20,16 +20,18 @@ process spades {
 
   input:
     tuple val(sampleName), path(reads)
+    val platform
 
   output:
     tuple val(sampleName), path("${sampleName}.fasta")
 
   script:
-    inputData = reads.size() == 2 ? "-1 ${reads[0]} -2 ${reads[1]}" : "-s ${reads[0]}"
-    args = params.args ? params.args : ''
+    def args = task.ext.args ?: ''
+    def platform_command = platform ? "--${platform}" : ""
+    def inputData = reads.size() == 2 ? "-1 ${reads[0]} -2 ${reads[1]}" : "-s ${reads[0]}"
     outputDir = params.publishDir ? params.publishDir : 'spades'
     """
-    spades.py ${args.join(' ')} ${inputData} -t ${task.cpus} -o ${outputDir}
+    spades.py ${platform_command} ${args.join(' ')} ${inputData} -t ${task.cpus} -o ${outputDir}
     mv ${outputDir}/contigs.fasta ${sampleName}.fasta
     """
 }
