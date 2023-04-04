@@ -2,7 +2,7 @@
 
 process samtools_view {
   tag "$input"
-  label "process_medium"
+  scratch params.scratch
 
   input:
     path input
@@ -23,7 +23,7 @@ process samtools_view {
 
 process samtools_sort {
   tag "${sampleName}"
-  label "process_medium"
+  scratch params.scratch
 
   input:
     tuple val(sampleName), path(input)
@@ -44,7 +44,7 @@ process samtools_sort {
 
 process samtools_index {
   tag "${sampleName}"
-  label "process_medium"
+  scratch params.scratch
 
   input:
     tuple val(sampleName), path(input)
@@ -61,7 +61,7 @@ process samtools_index {
 
 process samtools_faidx {
   tag "$input"
-  label "process_low"
+  scratch params.scratch
 
   input:
     path input

@@ -13,7 +13,7 @@ params = initParams(params)
 
 process bracken {
   tag "${sampleName}"
-  label "process_high"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite

@@ -19,8 +19,8 @@ def getFileBasename(path) {
 params = initParams(params)
 
 process mask_polymorph_assembly {
-  label "process_low"
   tag "${sampleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
@@ -39,8 +39,8 @@ process mask_polymorph_assembly {
 }
 
 process export_to_cdm {
-  label "process_low"
   tag "${sampleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
@@ -66,8 +66,8 @@ process export_to_cdm {
 }
 
 process export_to_cgviz {
-  label "process_low"
   tag "${sampleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
@@ -106,7 +106,7 @@ process export_to_cgviz {
 
 process ariba_summary_to_json {
   tag "${summary.simpleName}"
-  label "process_low"
+  scratch params.scratch
   publishDir "${params.publishDir}",
     mode: params.publishDirMode,
     overwrite: params.publishDirOverwrite
@@ -128,7 +128,7 @@ process ariba_summary_to_json {
 
 process post_align_qc {
   tag "${bam.simpleName}"
-  label "process_low"
+  scratch params.scratch
   publishDir "${params.publishDir}",
     mode: params.publishDirMode,
     overwrite: params.publishDirOverwrite
@@ -151,7 +151,7 @@ process post_align_qc {
 
 process save_analysis_metadata {
   tag "${workflow.runName}"
-  label "process_low"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite

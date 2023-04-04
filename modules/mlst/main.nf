@@ -19,7 +19,7 @@ params = initParams(params)
 
 process mlst {
   tag "${sampleName}"
-  label "process_medium"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite

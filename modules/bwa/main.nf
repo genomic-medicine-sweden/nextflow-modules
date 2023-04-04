@@ -12,8 +12,8 @@ def initParams(Map params) {
 params = initParams(params)
 
 process bwa_index {
-  label "process_high"
   tag "${sampleName}"
+  scratch params.scratch
 
   input:
     tuple val(sampleName), path(reference)
@@ -28,8 +28,8 @@ process bwa_index {
 }
 
 process bwa_mem {
-  label "process_high"
   tag "${sampleName}"
+  scratch params.scratch
 
   input:
     tuple val(sampleName), path(reads)

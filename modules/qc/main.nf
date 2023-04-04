@@ -13,8 +13,8 @@ params = initParams(params)
 
 process post_align_qc {
   tag "${sampleName}"
-  label "process_low"
-  publishDir params.publishDir, 
+  scratch params.scratch
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 

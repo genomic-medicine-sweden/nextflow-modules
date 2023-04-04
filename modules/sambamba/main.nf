@@ -12,8 +12,8 @@ def initParams(Map params) {
 params = initParams(params)
 
 process sambamba_markdup {
-  label "process_high"
   tag "${sampleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite

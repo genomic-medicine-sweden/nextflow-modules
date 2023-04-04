@@ -13,16 +13,19 @@ params = initParams(params)
 
 process skesa {
   tag "${sampleName}"
-  label "process_high"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
   input:
-    tuple val(sampleName), path(reads)
+    tuple val(sampleName), path(reads), val(platform) 
 
   output:
     tuple val(sampleName), path("${output}")
+
+  when:
+    task.ext.when && platform == "illumina"
 
   script:
     def args = task.ext.args ?: ''

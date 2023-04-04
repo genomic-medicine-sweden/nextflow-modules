@@ -12,8 +12,8 @@ def initParams(Map params) {
 params = initParams(params)
 
 process chewbbaca_allelecall {
-  label "process_medium"
   tag "${workflow.runName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
@@ -46,8 +46,8 @@ process chewbbaca_allelecall {
 }
 
 process chewbbaca_create_batch_list {
-  label "process_low"
-  publishDir params.publishDir, 
+  scratch params.scratch
+  publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
@@ -65,8 +65,8 @@ process chewbbaca_create_batch_list {
 }
 
 process chewbbaca_split_results {
-  label "process_low"
   tag "${sampleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
@@ -87,8 +87,8 @@ process chewbbaca_split_results {
 }
 
 process chewbbaca_split_missing_loci {
-  label "process_low"
   tag "${assembly.simpleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite

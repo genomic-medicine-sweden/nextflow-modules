@@ -12,8 +12,8 @@ def initParams(Map params) {
 params = initParams(params)
 
 process create_analysis_result {
-  label "process_low"
   tag "${sampleName}"
+  scratch params.scratch
   publishDir "${params.publishDir}", 
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
