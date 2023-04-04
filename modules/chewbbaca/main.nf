@@ -30,13 +30,14 @@ process chewbbaca_allelecall {
     //tuple val(sampleName), path("${missingLoci}"), emit: missing
 
   script:
+    def args = task.ext.args ?: ''
     missingLoci = "chewbbaca.missingloci"
     trainingFile = trainingFile ? "--ptf ${trainingFile}" : "" 
 
     """
     chewie AlleleCall \\
     -i ${batchInput} \\
-    ${params.args.join(' ')} \\
+    ${args} \\
     --cpu ${task.cpus} \\
     --output-directory output_dir \\
     ${trainingFile} \\

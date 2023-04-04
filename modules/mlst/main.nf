@@ -35,6 +35,7 @@ process mlst {
     tuple val(sampleName), path('*.novel'), optional: true, emit: novel
 
   script:
+    def args = task.ext.args ?: ''
     outputName = "${sampleName}.mlst"
     abbrevName = getAbbrevSpeciesName(species)
     blastDbPath = blastDb ? "--blastdb ${blastDb}/mlst.fa" : ""
@@ -42,7 +43,7 @@ process mlst {
     //${pubmlstDataDir} \\
     """
     mlst \\
-      ${params.args.join(' ')} \\
+      ${args} \\
       ${blastDbPath} \\
       --scheme  ${abbrevName} \\
       --json ${outputName}.json \\

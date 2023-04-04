@@ -26,12 +26,13 @@ process ariba_prepareref {
     path(outputDir)
 
   script:
+    def args = task.ext.args ?: ''
     def outputDir = "ariba_reference"
     def metadata = metadata ? "--metadata ${metadata}" : "--all_coding"
     """
     ariba prepareref \\
     --threads ${task.cpus} \\
-    ${args.join(' ')} \\
+    ${args} \\
     ${metadata} \\
     --fasta ${fasta} \\
     ${outputDir}

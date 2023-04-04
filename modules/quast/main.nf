@@ -26,12 +26,12 @@ process quast {
     tuple val(sampleName), path("${assembly.simpleName}.quast.tsv")
 
   script:
+    def args = task.ext.args ?: ''
     sampleName = "${assembly.simpleName}"
-    args = params.args ? params.args : ''
     reference = reference ? "-r ${reference}" : ''
     outputDir = 'quast_outdir'
     """
-    quast.py ${args.join(' ')} ${assembly} ${reference} -o ${outputDir} -t ${task.cpus}
+    quast.py ${args} ${assembly} ${reference} -o ${outputDir} -t ${task.cpus}
     cp ${outputDir}/transposed_report.tsv ${sampleName}.quast.tsv
     """
 }
