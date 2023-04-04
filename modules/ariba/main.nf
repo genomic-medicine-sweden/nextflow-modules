@@ -53,9 +53,10 @@ process ariba_run {
     tuple val(sampleName), path("${sampleName}_ariba_report.tsv")
 
   script:
+    def args = task.ext.args ?: ''
     outputName = "ariba_output"
     """
-    ariba run ${args.join(' ')} --force --threads ${task.cpus} ${referenceDir} ${reads.join(' ')} ${outputName}
+    ariba run ${args} --force --threads ${task.cpus} ${referenceDir} ${reads.join(' ')} ${outputName}
     cp ${outputName}/report.tsv ${sampleName}_ariba_report.tsv
     """
 }
@@ -74,9 +75,10 @@ process ariba_summary {
     tuple val(sampleName), path("${outputPrefix}.csv")
 
   script:
+    def args = task.ext.args ?: ''
     outputPrefix = params.prefix ?: report.simpleName.replaceFirst('report', 'summary')
     """
-    ariba summary ${args.join(' ')} ${outputPrefix} ${report}
+    ariba summary ${args} ${outputPrefix} ${report}
     """
 }
 

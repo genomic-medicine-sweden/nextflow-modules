@@ -26,8 +26,9 @@ process freebayes {
     tuple val(sampleName), path(output)
 
   script:
+    def args = task.ext.args ?: ''
     output = "${sampleName}.vcf"
     """
-    freebayes ${params.args.join(' ')} -f ${fasta} ${bam} > ${output}
+    freebayes ${args} -f ${fasta} ${bam} > ${output}
     """
 }

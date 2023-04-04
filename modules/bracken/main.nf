@@ -27,11 +27,12 @@ process bracken {
     tuple val(sampleName), path("${outputReport}"), emit: report
 
   script:
+    def args = task.ext.args ?: ''
     output = "${sampleName}_bracken.out"
     outputReport = "${sampleName}_bracken.report"
     """
     bracken \\
-    ${args.join(' ')} \\
+    ${args} \\
     -d ${database} \\
     -i ${report} \\
     -o ${output} \\

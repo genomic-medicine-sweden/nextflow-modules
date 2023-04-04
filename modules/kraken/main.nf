@@ -27,11 +27,12 @@ process kraken {
     tuple val(sampleName), path("${report}"), emit: report
 
   script:
+    def args = task.ext.args ?: ''
     output = "${sampleName}_kraken.out"
     report = "${sampleName}_kraken.report"
     """
     kraken2 \\
-    ${args.join(' ')} \\
+    ${args} \\
     --threads ${task.cpus} \\
     --db ${database} \\
     --output ${output} \\
