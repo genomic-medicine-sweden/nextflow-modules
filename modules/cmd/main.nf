@@ -156,20 +156,27 @@ process save_analysis_metadata {
     mode: params.publishDirMode, 
     overwrite: params.publishDirOverwrite
 
+  input:
+    tuple val(sampleName), path(reads), val(platform)  
+
   output:
     path(output)
 
   script:
-    output = "${workflow.runName}_analysis_meta.json"
+    def seqType = reads.size() == 2 ? "PE" : "SE"
+    output = "${sampleName}_analysis_meta.json"
     """
     #!/usr/bin/env python
     import json
 
     res = {
-        "run": "$workflow.runName",
+        "workflow_name": "$workflow.runName",
+        "sample_name": "${sampleName}",
+        "sequencing_platform": "${platform}",
+        "sequencing_type": "${seqType}",
         "date": "$workflow.start",
         "pipeline": "$workflow.scriptName",
-        "version": "$workflow.revision",
+        "version": "$workflow.manifest.version",
         "commit": "$workflow.commitId",
         "configuration_files": "$workflow.configFiles"[1:-1].split(','),
         "analysis_profile": "$workflow.profile",
