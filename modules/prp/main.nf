@@ -47,5 +47,11 @@ process create_analysis_result {
       ${virulenceArgs} \\
       ${resfinderArgs} \\
       ${output}
-    """ 
+    """
+
+  stub:
+    output = "${sampleName}_result.json"
+    """
+    touch $output
+    """
 }

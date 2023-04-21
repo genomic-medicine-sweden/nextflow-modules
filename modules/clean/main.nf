@@ -33,4 +33,10 @@ process assembly_trim_clean {
     """
     run_assembly_trimClean.pl --numcpus ${task.cpus} ${args} -i ${reads} -o ${output}
     """
+
+  stub:
+    output = "${sampleName}_cleaned.fastq.gz"
+    """
+    touch $output
+    """
 }

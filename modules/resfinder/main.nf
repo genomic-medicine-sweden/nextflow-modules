@@ -26,10 +26,11 @@ process resfinder {
 
   output:
     tuple val(sampleName), path(outputFileJson), emit: json
-    tuple val(sampleName), path(metaFile), emit: meta
-    path outputFileGene, emit: geneTable
-    path outputFilePoint, emit: pointTable
-    
+    tuple val(sampleName), path(metaFile)      , emit: meta
+    path outputFileGene                        , emit: geneTable
+    path outputFilePoint                       , emit: pointTable
+    path "*versions.yml"                       , emit: versions
+  
   script:
     def resfinderFinderParams = pointfinderDb ? "--acquired --db_path_res ${resfinderDb}" : ""
     def pointFinderParams = pointfinderDb ? "--point --db_path_point ${pointfinderDb}" : ""
@@ -57,5 +58,31 @@ process resfinder {
     cp std_format_under_development.json ${outputFileJson}
     cp pheno_table.txt ${outputFileGene}
     cp PointFinder_results.txt ${outputFilePoint}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     resfinder:
+      version: \$(echo \$(python -m resfinder --version 2>&1) )
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    outputFileJson = "resfinder_${sampleName}.json"
+    metaFile = "resfinder_meta_${sampleName}.json"
+    outputFileGene = "pheno_table_${sampleName}.txt"
+    outputFilePoint = "point_table_${sampleName}.txt"
+    """
+    touch $outputFileJson
+    touch $metaFile
+    touch $outputFileGene
+    touch $outputFilePoint
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     resfinder:
+      version: \$(echo \$(python -m resfinder --version 2>&1) )
+      container: ${task.container}
+    END_VERSIONS
     """
 }

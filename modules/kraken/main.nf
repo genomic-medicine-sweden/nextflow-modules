@@ -23,8 +23,9 @@ process kraken {
     path database
 
   output:
-    tuple val(sampleName), path("${output}"), emit: output
-    tuple val(sampleName), path("${report}"), emit: report
+    tuple val(sampleName), path(output), emit: output
+    tuple val(sampleName), path(report), emit: report
+    path "*versions.yml"                    , emit: versions
 
   script:
     def args = task.ext.args ?: ''
@@ -38,5 +39,27 @@ process kraken {
     --output ${output} \\
     --report ${report} \\
     ${reads.join(' ')}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     kraken2:
+      version: \$(echo \$(kraken2 --version 2>&1) | sed 's/^.*Kraken version // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    output = "${sampleName}_kraken.out"
+    report = "${sampleName}_kraken.report"
+    """
+    touch ${output}
+    touch ${report}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     kraken2:
+      version: \$(echo \$(kraken2 --version 2>&1) | sed 's/^.*Kraken version // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }

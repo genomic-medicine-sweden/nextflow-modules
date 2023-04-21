@@ -30,9 +30,10 @@ process mlst {
     path blastDb
 
   output:
-    tuple val(sampleName), path('*.tsv'), optional: true, emit: tsv
-    tuple val(sampleName), path('*.json'), optional: true, emit: json
+    tuple val(sampleName), path('*.tsv')  , optional: true, emit: tsv
+    tuple val(sampleName), path('*.json') , optional: true, emit: json
     tuple val(sampleName), path('*.novel'), optional: true, emit: novel
+    path "*versions.yml"                  , emit: versions
 
   script:
     def args = task.ext.args ?: ''
@@ -50,5 +51,26 @@ process mlst {
       --novel ${outputName}.novel \\
       --threads ${task.cpus} \\
       ${assembly}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     mlst:
+      version: \$(echo \$(mlst --version 2>&1) | sed 's/^.*mlst //')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    """
+    touch ${sampleName}.tsv
+    touch ${sampleName}.json
+    touch ${sampleName}.novel
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     mlst:
+      version: \$(echo \$(mlst --version 2>&1) | sed 's/^.*mlst //')
+      container: ${task.container}
+    END_VERSIONS
     """
 }

@@ -22,7 +22,8 @@ process spades_iontorrent {
     tuple val(sampleName), path(reads), val(platform)
 
   output:
-    tuple val(sampleName), path("${sampleName}.fasta")
+    tuple val(sampleName), path("${sampleName}.fasta"), emit: fasta
+    path "*versions.yml"                              , emit: versions
 
   when:
     platform == "iontorrent"
@@ -34,6 +35,26 @@ process spades_iontorrent {
     """
     spades.py ${args} ${inputData} -t ${task.cpus} -o ${outputDir}
     mv ${outputDir}/contigs.fasta ${sampleName}.fasta
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     spades:
+      version: \$(echo \$(spades.py --version 2>&1) | sed 's/^.*SPAdes genome assembler v//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    output = "${sampleName}.fasta"
+    """
+    touch $output
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     spades:
+      version: \$(echo \$(spades.py --version 2>&1) | sed 's/^.*SPAdes genome assembler v//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
 
@@ -48,7 +69,8 @@ process spades_illumina {
     tuple val(sampleName), path(reads), val(platform)
 
   output:
-    tuple val(sampleName), path("${sampleName}.fasta")
+    tuple val(sampleName), path("${sampleName}.fasta"), emit: fasta
+    path "*versions.yml"                              , emit: versions
 
   when:
     task.ext.when && platform == "illumina"
@@ -60,6 +82,25 @@ process spades_illumina {
     """
     spades.py ${args} ${inputData} -t ${task.cpus} -o ${outputDir}
     mv ${outputDir}/contigs.fasta ${sampleName}.fasta
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     spades:
+      version: \$(echo \$(spades.py --version 2>&1) | sed 's/^.*SPAdes genome assembler v//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    output = "${sampleName}.fasta"
+    """
+    touch $output
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     spades:
+      version: \$(echo \$(spades.py --version 2>&1) | sed 's/^.*SPAdes genome assembler v//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
-

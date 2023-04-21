@@ -25,7 +25,7 @@ process virulencefinder {
 
   output:
     tuple val(sampleName), path(outputFile), emit: json
-    tuple val(sampleName), path(metaFile), emit: meta
+    tuple val(sampleName), path(metaFile)  , emit: meta
     
   script:
     databasesArgs = databases ? "--databases ${databases.join(',')}" : ""
@@ -43,5 +43,13 @@ process virulencefinder {
     ${databasesArgs}                \\
     --databasePath ${virulenceDb}
     cp data.json ${outputFile}
+    """
+
+ stub:
+    outputFile = "virulencefinder_${sampleName}.json"
+    metaFile = "virulencefinder_meta_${sampleName}.json"
+    """
+    touch $outputFile
+    touch $metaFile
     """
 }

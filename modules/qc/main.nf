@@ -24,11 +24,17 @@ process post_align_qc {
     path reference
 
   output:
-    tuple val(sampleName), path(output)
+    tuple val(sampleName), path(output), emit: qc
 
   script:
     output = "${sampleName}_bwa.qc"
     """
     postaln_qc.pl ${bam} ${reference} ${sampleName} ${task.cpus} > ${output}
+    """
+
+  stub:
+    output = "${sampleName}_bwa.qc"
+    """
+    touch $output
     """
 }

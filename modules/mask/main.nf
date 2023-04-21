@@ -11,7 +11,7 @@ def initParams(Map params) {
 
 params = initParams(params)
 
-process freebayes {
+process mask_polymorph_assembly {
   tag "${sampleName}"
   scratch params.scratch
   publishDir "${params.publishDir}", 
@@ -19,21 +19,19 @@ process freebayes {
     overwrite: params.publishDirOverwrite
 
   input:
-    tuple val(sampleName), path(fasta)
-    tuple path(bam), path(bai) 
+    tuple val(sampleName), path(assembly), path(polymorph)
 
   output:
-    tuple val(sampleName), path(output), emit: vcf
+    tuple val(sampleName), path(output), emit: fasta
 
   script:
-    def args = task.ext.args ?: ''
-    output = "${sampleName}.vcf"
+    output = "${sampleName}_masked.fasta"
     """
-    freebayes ${args} -f ${fasta} ${bam} > ${output}
+    error_corr_assembly.pl ${assembly} ${polymorph} > ${output}
     """
 
   stub:
-    output = "${sampleName}.vcf"
+    output = "${sampleName}_masked.fasta"
     """
     touch $output
     """

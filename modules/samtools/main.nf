@@ -11,6 +11,7 @@ process samtools_view {
   output:
     path('*.bam'), optional: true, emit: bam
     path('*.cram'), optional: true, emit: cram
+    path "*versions.yml"
 
   script:
     def reference = fasta ? "--reference ${fasta} -C" : ""
@@ -18,6 +19,26 @@ process samtools_view {
     def fileType = input.getExtension()
     """
     samtools view $reference ${input} > ${prefix}.${fileType}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    """
+    touch ${sampleName}.bam
+    touch ${sampleName}.cram
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
 
@@ -30,8 +51,9 @@ process samtools_sort {
     path fasta
 
   output:
-    tuple val(sampleName), path('*.bam'), optional: true, emit: bam
+    tuple val(sampleName), path('*.bam') , optional: true, emit: bam
     tuple val(sampleName), path('*.cram'), optional: true, emit: cram
+    path "*versions.yml"                 , emit: versions
 
   script:
     def reference = fasta ? "--reference ${fasta} -O cram" : "-O bam"
@@ -39,6 +61,26 @@ process samtools_sort {
     def fileType = fasta ? "cram" : "bam"
     """
     samtools sort ${reference} -@ $task.cpus -o ${prefix}.sorted.${fileType} ${input}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    """
+    touch ${sampleName}.bam
+    touch ${sampleName}.cram
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
 
@@ -50,12 +92,33 @@ process samtools_index {
     tuple val(sampleName), path(input)
 
   output:
-    tuple val(sampleName), path(output)
+    tuple val(sampleName), path(output), emit: bai
+    path "*versions.yml"               , emit: versions
 
   script:
     output = "${input}.bai"
     """
     samtools index -@ $task.cpus ${input}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    output = "${input}.bai"
+    """
+    touch $output
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
 
@@ -67,11 +130,32 @@ process samtools_faidx {
     path input
 
   output:
-    path output
+    path output         , emit: fai
+    path "*versions.yml", emit: versions
 
   script:
     output = "${input}.fai"
     """
     samtools faidx ${input}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    output = "${input}.fai"
+    """
+    touch $output
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     samtools:
+      version: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }

@@ -52,6 +52,7 @@ process ariba_run {
 
   output:
     tuple val(sampleName), path("${sampleName}_ariba_report.tsv")
+    path "*versions.yml"
 
   script:
     def args = task.ext.args ?: ''
@@ -59,6 +60,25 @@ process ariba_run {
     """
     ariba run ${args} --force --threads ${task.cpus} ${referenceDir} ${reads.join(' ')} ${outputName}
     cp ${outputName}/report.tsv ${sampleName}_ariba_report.tsv
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     ariba:
+      version: \$(echo \$(ariba version -v 2>&1) | sed 's/.*ARIBA version: // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    """
+    touch ${sampleName}_ariba_report.tsv
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     ariba:
+      version: \$(echo \$(ariba version -v 2>&1) | sed 's/.*ARIBA version: // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
 
@@ -71,6 +91,8 @@ process ariba_summary {
 
   input:
     tuple val(sampleName), path(report)
+    path reads
+    path "*versions.yml"
 
   output:
     tuple val(sampleName), path("${outputPrefix}.csv")
@@ -80,6 +102,26 @@ process ariba_summary {
     outputPrefix = params.prefix ?: report.simpleName.replaceFirst('report', 'summary')
     """
     ariba summary ${args} ${outputPrefix} ${report}
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     ariba:
+      version: \$(echo \$(ariba version -v 2>&1) | sed 's/.*ARIBA version: // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
+    """
+
+  stub:
+    outputPrefix = params.prefix ?: report.simpleName.replaceFirst('report', 'summary')
+    """
+    touch ${outputPrefix}.csv
+
+    cat <<-END_VERSIONS > ${task.process}_versions.yml
+    ${task.process}:
+     ariba:
+      version: \$(echo \$(ariba version -v 2>&1) | sed 's/.*ARIBA version: // ; s/ .*//')
+      container: ${task.container}
+    END_VERSIONS
     """
 }
 
@@ -91,15 +133,22 @@ process ariba_summary_to_json {
     overwrite: params.publishDirOverwrite
 
   input:
-    tuple val(sampleName), path(report), path(summary) 
+    tuple val(sampleName), path(report), path(summary)
     path reference
+    path reads
 
   output:
-    tuple val(sampleName), path("${output}"), emit: output
+    tuple val(sampleName), path(output), emit: output
 
   script:
     output = "${summary.simpleName}_export.json"
     """
     ariba2json.pl ${reference} ${summary} ${report} > ${output}
+    """
+
+  stub:
+    output = "${summary.simpleName}_export.json"
+    """
+    touch $output
     """
 }
