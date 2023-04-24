@@ -1,14 +1,3 @@
-//
-// Initialize options with default values.
-//
-def initParams(Map params) {
-    params.args = params.args ?: ''
-    params.publishDir = params.publishDir ?: ''
-    params.publishDirMode = params.publishDirMode ?: ''
-    params.publishDirOverwrite = params.publishDirMode ?: false
-    return params
-}
-
 process save_analysis_metadata {
   tag "${workflow.runName}"
   scratch params.scratch

@@ -1,5 +1,3 @@
-// Samtools functions
-
 process samtools_view {
   tag "$input"
   scratch params.scratch

@@ -1,16 +1,3 @@
-//
-// Initialize options with default values.
-//
-def initParams(Map params) {
-    params.args = params.args ?: ''
-    params.publishDir = params.publishDir ?: ''
-    params.publishDirMode = params.publishDirMode ?: ''
-    params.publishDirOverwrite = params.publishDirMode ?: false
-    return params
-}
-
-params = initParams(params)
-
 process bracken {
   tag "${sampleName}"
   scratch params.scratch

@@ -1,4 +1,4 @@
-process create_analysis_result {
+process export_to_cgviz {
   tag "${sampleName}"
   scratch params.scratch
   publishDir "${params.publishDir}", 
@@ -7,28 +7,28 @@ process create_analysis_result {
 
   input:
     path runInfo
+    file meta
     //paths
-    tuple val(sampleName), val(quast), val(mlst), val(cgmlst), val(resistance), val(resfinderMeta), val(virulence), val(virulencefinderMeta), val(bracken)
+    tuple val(sampleName), val(quast), val(mlst), val(cgmlst), val(virulence), val(resistance)
 
   output:
     path(output)
 
   script:
-    output = "${sampleName}_result.json"
+    output = "${sampleName}_cgviz.json"
+    //--kraken ${bracken} \\
     quastArgs = quast ? "--quast ${quast}" : "" 
-    brackenArgs = bracken ? "--kraken ${bracken}" : "" 
     mlstArgs = mlst ? "--mlst ${mlst}" : "" 
     cgmlstArgs = cgmlst ? "--cgmlst ${cgmlst}" : "" 
     resfinderArgs = resistance ? "--resistance ${resistance}" : "" 
-    resfinderArgs = resfinderMeta ? "${resfinderArgs} --process-metadata ${resfinderMeta}" : resfinderArgs
     virulenceArgs = virulence ? "--virulence ${virulence}" : "" 
-    virulenceArgs = virulencefinderMeta ? "${virulenceArgs} --process-metadata ${virulencefinderMeta}" : virulenceArgs
+    metaArgs = meta ? "--process-metadata  ${meta[1..-1].join(' --process-metadata ')}" : ""
     """
-    prp create-output \\
+    combine_results.py \\
       --sample-id ${sampleName} \\
       --run-metadata ${runInfo} \\
+      ${metaArgs} \\
       ${quastArgs} \\
-      ${brackenArgs} \\
       ${mlstArgs} \\
       ${cgmlstArgs} \\
       ${virulenceArgs} \\
@@ -37,7 +37,7 @@ process create_analysis_result {
     """
 
   stub:
-    output = "${sampleName}_result.json"
+    output = "${sampleName}_cgviz.json"
     """
     touch $output
     """
