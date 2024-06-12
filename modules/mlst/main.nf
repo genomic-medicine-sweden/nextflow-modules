@@ -41,9 +41,15 @@ process mlst {
     //pubmlstDataDir = pubmlstData ? "--datadir ${pubmlstData}" : ""
     //${pubmlstDataDir} \\
     """
+    makeblastdb \\
+    -in ${blastDb} \\
+    -dbtype nucl \\
+    -title mlst \\
+    -out mlst.db
+
     mlst \\
       ${params.args.join(' ')} \\
-      ${blastDbPath} \\
+      --blastdb mlst.db \\
       --scheme  ${abbrevName} \\
       --json ${outputName}.json \\
       --novel ${outputName}.novel \\
